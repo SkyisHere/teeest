@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 
 <head>
@@ -14,6 +14,7 @@
 			cursor: none;
 			/* прячем обычный курсор */
 			border: 1px solid #222;
+			touch-action: none;
 		}
 
 		/* Размытая версия — всегда видна */
@@ -69,28 +70,66 @@
 		<img src="https://picsum.photos/id/1015/900/600" class="sharp" id="sharp" alt="sharp">
 	</div>
 
+
+
+
 	<script>
 		const container = document.getElementById('container');
-		const sharpImg = document.getElementById('sharp');
+		const sharp = document.getElementById('sharp');
+		let timeoutId = null;
 
+		function showSpotlight(xPercent, yPercent) {
+			sharp.style.setProperty('--x', `${xPercent}%`);
+			sharp.style.setProperty('--y', `${yPercent}%`);
+			sharp.style.opacity = '1';
+
+			// Сбрасываем предыдущий таймер
+			if (timeoutId) clearTimeout(timeoutId);
+
+			// Через 2 секунды прячем круг
+			timeoutId = setTimeout(() => {
+				sharp.style.opacity = '0';
+			}, 2000);
+		}
+
+		// === Десктоп (мышь) ===
 		container.addEventListener('mousemove', (e) => {
 			const rect = container.getBoundingClientRect();
-
 			const x = ((e.clientX - rect.left) / rect.width) * 100;
 			const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-			sharpImg.style.setProperty('--x', `${x}%`);
-			sharpImg.style.setProperty('--y', `${y}%`);
+			showSpotlight(x, y);
 		});
 
-		// Плавное появление при наведении
-		container.addEventListener('mouseenter', () => {
-			sharpImg.style.opacity = '1';
+		// === Мобильные устройства (touch) ===
+		container.addEventListener('touchstart', (e) => {
+			e.preventDefault(); // предотвращаем скролл и зум
+
+			const rect = container.getBoundingClientRect();
+			const touch = e.touches[0];
+			const x = ((touch.clientX - rect.left) / rect.width) * 100;
+			const y = ((touch.clientY - rect.top) / rect.height) * 100;
+
+			showSpotlight(x, y);
 		});
 
+		// Опционально: если хочешь, чтобы круг двигался при удержании пальца (drag)
+		container.addEventListener('touchmove', (e) => {
+			e.preventDefault();
+			const rect = container.getBoundingClientRect();
+			const touch = e.touches[0];
+			const x = ((touch.clientX - rect.left) / rect.width) * 100;
+			const y = ((touch.clientY - rect.top) / rect.height) * 100;
+
+			showSpotlight(x, y);   // обновляем позицию и сбрасываем таймер 2 сек
+		});
+
+		// При уходе с элемента — прячем круг
 		container.addEventListener('mouseleave', () => {
-			sharpImg.style.opacity = '0';
+			if (timeoutId) clearTimeout(timeoutId);
+			sharp.style.opacity = '0';
 		});
+	</script>
 	</script>
 
 </body>
