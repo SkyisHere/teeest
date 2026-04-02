@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Чёткий круг на размытой картинке</title>
+	<style>
+		.container {
+			position: relative;
+			width: 3200px;
+			/* ← измени под свою картинку */
+			height: 1200px;
+			overflow: hidden;
+			cursor: none;
+			/* прячем обычный курсор */
+			border: 1px solid #222;
+		}
+
+		/* Размытая версия — всегда видна */
+		.blurred {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			filter: blur(25px);
+			/* сила размытия */
+			z-index: 1;
+		}
+
+		/* Чёткая версия — показывается только внутри круга */
+		.sharp {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			z-index: 2;
+			pointer-events: none;
+
+			/* Главный эффект — круглый "фонарик" */
+			mask-image: radial-gradient(circle 180px at var(--x) var(--y),
+					black 40%,
+					/* чёткая область */
+					transparent 65%
+					/* мягкий переход */
+				);
+			-webkit-mask-image: radial-gradient(circle 180px at var(--x) var(--y),
+					black 40%,
+					transparent 65%);
+		}
+
+		/* При наведении делаем чёткий слой видимым */
+		.container:hover .sharp {
+			opacity: 1;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container" id="container">
+		<!-- Размытая картинка -->
+		<img src="https://picsum.photos/id/1015/900/600" class="blurred" alt="blurred">
+
+		<!-- Чёткая картинка (та же самая) -->
+		<img src="https://picsum.photos/id/1015/900/600" class="sharp" id="sharp" alt="sharp">
+	</div>
+
+	<script>
+		const container = document.getElementById('container');
+		const sharpImg = document.getElementById('sharp');
+
+		container.addEventListener('mousemove', (e) => {
+			const rect = container.getBoundingClientRect();
+
+			const x = ((e.clientX - rect.left) / rect.width) * 100;
+			const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+			sharpImg.style.setProperty('--x', `${x}%`);
+			sharpImg.style.setProperty('--y', `${y}%`);
+		});
+
+		// Плавное появление при наведении
+		container.addEventListener('mouseenter', () => {
+			sharpImg.style.opacity = '1';
+		});
+
+		container.addEventListener('mouseleave', () => {
+			sharpImg.style.opacity = '0';
+		});
+	</script>
+
+</body>
+
+</html>
